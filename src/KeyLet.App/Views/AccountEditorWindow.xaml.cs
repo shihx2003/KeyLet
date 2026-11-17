@@ -146,23 +146,33 @@ public partial class AccountEditorWindow : FluentWindow
         TryImportFromClipboard();
     }
 
-    private void ScreenSnipButton_Click(object sender, RoutedEventArgs e)
+    private async void ScreenSnipButton_Click(object sender, RoutedEventArgs e)
     {
         Window? owner = Owner;
         WindowState previousOwnerState = owner?.WindowState ?? WindowState.Normal;
-        Hide();
-        if (owner is not null)
-        {
-            owner.WindowState = WindowState.Minimized;
-        }
-        Thread.Sleep(150);
+        WindowState previousSelfState = WindowState;
 
         try
         {
-            var snipWindow = new RegionSnipWindow();
+            WindowState = WindowState.Minimized;
+            if (owner is not null)
+            {
+                owner.WindowState = WindowState.Minimized;
+            }
+            await Task.Delay(250);
+
+            System.Windows.Media.Imaging.BitmapSource? fullSnapshot = ScreenCaptureService.CaptureVirtualScreen();
+            if (fullSnapshot is null)
+            {
+                ShowError("屏幕截图失败，详情请查看 data/logs。");
+                return;
+            }
+
+            var snipWindow = new RegionSnipWindow(fullSnapshot);
             if (snipWindow.ShowDialog() == true && snipWindow.CapturedImage is not null)
             {
                 string? qrText = _qrScanner.DecodeFromBitmapSource(snipWindow.CapturedImage);
+                AppLogger.Info($"AccountEditorWindow screen scan decoded={qrText is not null}");
                 if (string.IsNullOrWhiteSpace(qrText))
                 {
                     ShowError("框选区域内未识别到有效的 2FA 二维码。");
@@ -174,13 +184,18 @@ public partial class AccountEditorWindow : FluentWindow
                 }
             }
         }
+        catch (Exception ex)
+        {
+            AppLogger.Error("ScreenSnipButton_Click failed.", ex);
+            ShowError($"屏幕扫码失败：{ex.Message}");
+        }
         finally
         {
             if (owner is not null)
             {
                 owner.WindowState = previousOwnerState == WindowState.Minimized ? WindowState.Normal : previousOwnerState;
             }
-            Show();
+            WindowState = previousSelfState == WindowState.Minimized ? WindowState.Normal : previousSelfState;
             Activate();
         }
     }
@@ -218,22 +233,22 @@ public partial class AccountEditorWindow : FluentWindow
     {
         if (_editingAccount is null && e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
         {
-            if (Clipboard.ContainsImage())
+            if (_qrScanner.HasClipboardImageOrFile())
             {
-                TryImportFromClipboard();
                 e.Handled = true;
+                TryImportFromClipboard();
             }
         }
     }
 
     private void TryImportFromClipboard()
     {
-        if (Clipboard.ContainsImage())
+        if (_qrScanner.HasClipboardImageOrFile())
         {
             string? qrText = _qrScanner.DecodeFromClipboard();
             if (string.IsNullOrWhiteSpace(qrText))
             {
-                ShowError("剪贴板图片中未识别到有效的二维码。");
+                ShowError("剪贴板图片中未识别到有效的二维码（可查看 data/logs）。");
                 return;
             }
 

@@ -1,5 +1,7 @@
-﻿using System.Security.Cryptography;
+﻿using System.IO;
+using System.Security.Cryptography;
 using System.Windows;
+using System.Windows.Threading;
 using KeyLet.App.Services;
 using KeyLet.App.ViewModels;
 using KeyLet.App.Views;
@@ -9,11 +11,12 @@ using KeyLet.Core.Storage;
 namespace KeyLet.App;
 
 /// <summary>
-/// KeyLet 桌面端入口：负责便携数据目录初始化、免密/密码解锁流程以及零后台安全退出。
+/// KeyLet 桌面端入口：负责便携数据目录与日志初始化、全局异常兜底、免密/密码解锁以及零后台安全退出。
 /// </summary>
 public partial class App : Application
 {
     private MainViewModel? _mainViewModel;
+    private string _dataDirectory = string.Empty;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -21,6 +24,11 @@ public partial class App : Application
 
         var pathService = new PortablePathService();
         pathService.EnsureDataDirectoryExists();
+        _dataDirectory = pathService.DataDirectory;
+
+        AppLogger.Initialize(_dataDirectory);
+        RegisterExceptionHandlers();
+        AppLogger.Info($"KeyLet starting. ExeDir={pathService.ExeDirectory}");
 
         var vaultRepository = new CsvVaultRepository();
         var settingsRepository = new SettingsRepository();
@@ -34,6 +42,7 @@ public partial class App : Application
         byte[]? masterKey = ResolveMasterKey(pathService.DataDirectory, vaultRepository, settingsRepository, dpapiKeyStore, ref settings);
         if (masterKey is null)
         {
+            AppLogger.Info("Startup cancelled during setup or unlock.");
             Shutdown(0);
             return;
         }
@@ -48,6 +57,7 @@ public partial class App : Application
             settings);
 
         _mainViewModel.LoadAccounts();
+        AppLogger.Info($"Vault unlocked. AccountCount={_mainViewModel.FilteredAccounts.Count}");
 
         var mainWindow = new MainWindow(_mainViewModel, qrScanner);
         MainWindow = mainWindow;
@@ -57,9 +67,42 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        AppLogger.Info("KeyLet exiting cleanly.");
         _mainViewModel?.Dispose();
         _mainViewModel = null;
         base.OnExit(e);
+    }
+
+    private void RegisterExceptionHandlers()
+    {
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        AppLogger.Error("Unhandled UI dispatcher exception.", e.Exception);
+        e.Handled = true;
+        System.Windows.MessageBox.Show(
+            $"操作出现异常：{e.Exception.Message}\n\n详细日志已保存至：{Path.Combine(_dataDirectory, "logs")}",
+            "KeyLet 提示",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+    }
+
+    private static void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            AppLogger.Error($"Unhandled AppDomain exception (IsTerminating={e.IsTerminating}).", ex);
+        }
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        AppLogger.Error("Unobserved background task exception.", e.Exception);
+        e.SetObserved();
     }
 
     private static byte[]? ResolveMasterKey(
@@ -71,6 +114,7 @@ public partial class App : Application
     {
         if (!vaultRepository.VaultExists(dataDirectory))
         {
+            AppLogger.Info("Vault not found; launching SetupVaultWindow.");
             var setupWindow = new SetupVaultWindow(dataDirectory, vaultRepository, settingsRepository, dpapiKeyStore, settings);
             bool? created = setupWindow.ShowDialog();
             if (created != true || setupWindow.DerivedKey is null)
@@ -88,12 +132,15 @@ public partial class App : Application
         {
             if (vaultRepository.VerifyKey(dataDirectory, cachedKey))
             {
+                AppLogger.Info("Auto-unlocked via Windows DPAPI.");
                 return cachedKey;
             }
 
+            AppLogger.Warn("DPAPI cached key did not match vault metadata; falling back to password unlock.");
             CryptographicOperations.ZeroMemory(cachedKey);
         }
 
+        AppLogger.Info("Launching UnlockWindow for master password.");
         var unlockWindow = new UnlockWindow(dataDirectory, vaultRepository, settingsRepository, dpapiKeyStore, settings);
         bool? unlocked = unlockWindow.ShowDialog();
         if (unlocked != true || unlockWindow.DerivedKey is null)

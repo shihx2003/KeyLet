@@ -41,19 +41,33 @@ public partial class MainWindow : FluentWindow
         OpenEditorForAdd(prefilledQrPayload: null);
     }
 
-    private void QuickScreenScanButton_Click(object sender, RoutedEventArgs e)
+    private async void QuickScreenScanButton_Click(object sender, RoutedEventArgs e)
     {
-        Hide();
-        Thread.Sleep(120);
-
         string? qrText = null;
         try
         {
-            var snipWindow = new RegionSnipWindow();
+            Hide();
+            await Task.Delay(220);
+
+            System.Windows.Media.Imaging.BitmapSource? fullSnapshot = ScreenCaptureService.CaptureVirtualScreen();
+            if (fullSnapshot is null)
+            {
+                _viewModel.StatusMessage = "屏幕截图失败，详情请查看 data/logs";
+                return;
+            }
+
+            var snipWindow = new RegionSnipWindow(fullSnapshot);
             if (snipWindow.ShowDialog() == true && snipWindow.CapturedImage is not null)
             {
                 qrText = _qrScanner.DecodeFromBitmapSource(snipWindow.CapturedImage);
+                AppLogger.Info($"MainWindow screen scan decoded={qrText is not null}");
             }
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Error("QuickScreenScanButton_Click failed.", ex);
+            _viewModel.StatusMessage = $"屏幕扫码失败：{ex.Message}";
+            return;
         }
         finally
         {
@@ -63,7 +77,7 @@ public partial class MainWindow : FluentWindow
 
         if (string.IsNullOrWhiteSpace(qrText))
         {
-            _viewModel.StatusMessage = "未在框选区域中识别到二维码";
+            _viewModel.StatusMessage = "未在框选区域中识别到有效二维码";
             return;
         }
 
@@ -186,16 +200,16 @@ public partial class MainWindow : FluentWindow
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control && Clipboard.ContainsImage())
+        if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control && _qrScanner.HasClipboardImageOrFile())
         {
+            e.Handled = true;
             string? qrText = _qrScanner.DecodeFromClipboard();
             if (string.IsNullOrWhiteSpace(qrText))
             {
-                _viewModel.StatusMessage = "剪贴板图片中未识别到有效二维码";
+                _viewModel.StatusMessage = "剪贴板图片中未识别到有效二维码（可查看 data/logs）";
                 return;
             }
 
-            e.Handled = true;
             OpenEditorForAdd(qrText);
         }
     }

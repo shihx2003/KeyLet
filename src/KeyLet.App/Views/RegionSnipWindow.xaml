@@ -2,30 +2,37 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="#44000000"
+        ResizeMode="NoResize"
         Topmost="True"
         ShowInTaskbar="False"
-        ResizeMode="NoResize"
         Cursor="Cross"
         KeyDown="Window_KeyDown"
-        MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
-        MouseMove="Canvas_MouseMove"
-        MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
-    <Canvas x:Name="OverlayCanvas" Background="Transparent">
-        <Border x:Name="SelectionBorder"
-                BorderBrush="#FF38BDF8"
-                BorderThickness="2"
-                Background="#2238BDF8"
-                Visibility="Collapsed" />
-        <Border Background="#CC111827"
-                CornerRadius="6"
-                Padding="12,6"
-                Canvas.Left="24"
-                Canvas.Top="24">
-            <TextBlock Foreground="White"
-                       FontSize="13"
-                       Text="拖动鼠标框选屏幕上的 2FA 二维码，按 Esc 取消" />
-        </Border>
-    </Canvas>
+        MouseRightButtonUp="Window_MouseRightButtonUp">
+    <Grid>
+        <!-- 直接渲染预截取的屏幕快照，避免遮罩隐藏延迟和跨 DPI 闪烁 -->
+        <Image x:Name="SnapshotImage" Stretch="Fill" />
+        <Border Background="#55000000" IsHitTestVisible="False" />
+
+        <Canvas x:Name="OverlayCanvas"
+                Background="Transparent"
+                MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                MouseMove="Canvas_MouseMove"
+                MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
+            <Border x:Name="SelectionBorder"
+                    BorderBrush="#FF38BDF8"
+                    BorderThickness="2"
+                    Background="#2238BDF8"
+                    Visibility="Collapsed" />
+            <Border Background="#CC111827"
+                    CornerRadius="6"
+                    Padding="12,6"
+                    Canvas.Left="24"
+                    Canvas.Top="24">
+                <TextBlock x:Name="HintTextBlock"
+                           Foreground="White"
+                           FontSize="13"
+                           Text="拖动鼠标框选屏幕上的 2FA 二维码，右键或 Esc 取消" />
+            </Border>
+        </Canvas>
+    </Grid>
 </Window>

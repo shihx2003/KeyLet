@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  Title="添加 / 编辑 2FA 密钥"
+                 Icon="pack://application:,,,/Resources/KeyLetLogo.png"
                  Width="540"
                  SizeToContent="Height"
                  ResizeMode="NoResize"
