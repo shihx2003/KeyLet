@@ -1,0 +1,45 @@
+# ==========================================
+# 安全红线：严禁将任何真实密钥与便携数据提交到 GitHub
+# ==========================================
+data/
+**/data/
+*.csv
+*.key
+*.unlock
+vault.meta.json
+local.unlock
+
+# ==========================================
+# 构建与发布产物
+# ==========================================
+bin/
+obj/
+dist/
+publish/
+out/
+artifacts/
+
+# ==========================================
+# .NET / Visual Studio / Rider / VS Code
+# ==========================================
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# ==========================================
+# Windows 系统文件
+# ==========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
