@@ -44,9 +44,9 @@ public sealed class AccountCardViewModel : ObservableObject
     public bool IsDefaultWithAffix => Account.HasAffix && Account.DefaultCopyMode == CopyFormatMode.WithAffix;
 
     public string DefaultActionTooltip => IsDefaultWithAffix
-        ? "点击复制带前后缀完整码（Shift+点击复制纯动态码）"
+        ? "点击复制完整码（Shift+点击纯码）"
         : Account.HasAffix
-            ? "点击复制纯动态码（Shift+点击复制带前后缀完整码）"
+            ? "点击复制纯码（Shift+点击完整码）"
             : "点击复制动态码";
 
     public string RawCode

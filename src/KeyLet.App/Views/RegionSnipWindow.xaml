@@ -31,7 +31,7 @@
                 <TextBlock x:Name="HintTextBlock"
                            Foreground="White"
                            FontSize="13"
-                           Text="拖动鼠标框选屏幕上的 2FA 二维码，右键或 Esc 取消" />
+                           Text="框选二维码区域 · 右键 / Esc 取消" />
             </Border>
         </Canvas>
     </Grid>

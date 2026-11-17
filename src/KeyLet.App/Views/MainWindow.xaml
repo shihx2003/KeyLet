@@ -25,7 +25,7 @@
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0"
-                     Title="KeyLet · 本地 2FA 密钥匣"
+                     Title="KeyLet"
                      ShowMaximize="True"
                      ShowMinimize="True">
             <ui:TitleBar.Icon>
@@ -46,26 +46,26 @@
 
             <ui:TextBox x:Name="SearchTextBox"
                         Grid.Column="0"
-                        PlaceholderText="搜索发行方或账号..."
+                        PlaceholderText="搜索..."
                         Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
 
             <ui:Button Grid.Column="1"
                        Margin="8,0,0,0"
                        Appearance="Primary"
                        Content="+ 添加"
-                       ToolTip="添加或导入 2FA 密钥"
+                       ToolTip="添加或导入密钥"
                        Click="AddAccountButton_Click" />
 
             <ui:Button Grid.Column="2"
                        Margin="8,0,0,0"
-                       Content="屏幕扫码"
-                       ToolTip="直接框选屏幕二维码导入（或按 Ctrl+V 粘贴二维码截图）"
+                       Content="扫码"
+                       ToolTip="框选屏幕二维码（也可按 Ctrl+V 粘贴截图）"
                        Click="QuickScreenScanButton_Click" />
 
             <ui:Button Grid.Column="3"
                        Margin="8,0,0,0"
                        Content="设置"
-                       ToolTip="主题、免密设置、剪贴板自动清理与主密码"
+                       ToolTip="设置与主密码"
                        Click="SettingsButton_Click" />
         </Grid>
 
@@ -129,7 +129,7 @@
                                                     <TextBlock FontSize="10.5"
                                                                Foreground="#FF0284C7"
                                                                FontWeight="SemiBold"
-                                                               Text="已配前后缀" />
+                                                               Text="前后缀" />
                                                 </Border>
                                                 <Border Margin="6,0,0,0"
                                                         Padding="6,1"
@@ -139,7 +139,7 @@
                                                         Visibility="{Binding IsDefaultWithAffix, Converter={StaticResource BoolToVisibilityConverter}}">
                                                     <TextBlock FontSize="10.5"
                                                                Foreground="#FF7C3AED"
-                                                               Text="默认完整" />
+                                                               Text="完整" />
                                                 </Border>
                                             </WrapPanel>
 
@@ -204,13 +204,13 @@
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                             <ui:Button Padding="10,4"
                                                        FontSize="12"
-                                                       Content="复制纯动态码"
+                                                       Content="纯码"
                                                        Click="CopyCodeOnlyButton_Click" />
                                             <ui:Button Margin="6,0,0,0"
                                                        Padding="10,4"
                                                        FontSize="12"
                                                        Appearance="Primary"
-                                                       Content="复制带前后缀"
+                                                       Content="完整码"
                                                        Visibility="{Binding HasAffix, Converter={StaticResource BoolToVisibilityConverter}}"
                                                        Click="CopyWithAffixButton_Click" />
                                         </StackPanel>
@@ -241,21 +241,21 @@
                 <TextBlock FontSize="17"
                            FontWeight="SemiBold"
                            HorizontalAlignment="Center"
-                           Text="还没有任何 2FA 密钥" />
+                           Text="暂无 2FA 密钥" />
                 <TextBlock Margin="0,6,0,14"
                            Opacity="0.7"
                            HorizontalAlignment="Center"
-                           Text="点击“+ 添加”、使用“屏幕扫码”，或直接拖入二维码图片 / 按 Ctrl+V 粘贴截图" />
+                           Text="点击「+ 添加」、扫码，或拖入 / Ctrl+V 粘贴二维码" />
                 <ui:Button Appearance="Primary"
                            HorizontalAlignment="Center"
-                           Content="立即添加第一个密钥"
+                           Content="添加密钥"
                            Click="AddAccountButton_Click" />
             </StackPanel>
 
             <TextBlock VerticalAlignment="Center"
                        HorizontalAlignment="Center"
                        Opacity="0.65"
-                       Text="没有匹配当前搜索条件的账号"
+                       Text="无匹配结果"
                        Visibility="{Binding HasSearchNoMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
         </Grid>
 
@@ -273,7 +273,7 @@
                            FontSize="11.5"
                            Opacity="0.55"
                            VerticalAlignment="Center"
-                           Text="Shift+点击切换复制模式 · data/ 本地便携存储" />
+                           Text="Shift+点击切换 · data/" />
             </Grid>
         </Border>
     </Grid>

@@ -22,7 +22,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private byte[]? _masterKey;
     private AppSettings _settings;
     private string _searchQuery = string.Empty;
-    private string _statusMessage = "点击卡片即可复制动态码";
+    private string _statusMessage = "点击卡片复制";
 
     public MainViewModel(
         PortablePathService pathService,
@@ -133,9 +133,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             StatusMessage = "剪贴板已自动安全清空";
         });
 
-        string modeText = effectiveMode == CopyFormatMode.WithAffix ? "完整码（含前后缀）" : "纯动态码";
-        string clearHint = clearSeconds > 0 ? $"，{clearSeconds} 秒后自动清空" : string.Empty;
-        string notice = $"已复制「{card.DisplayTitle}」{modeText}{clearHint}";
+        string modeText = effectiveMode == CopyFormatMode.WithAffix ? "完整码" : "纯码";
+        string clearHint = clearSeconds > 0 ? $" · {clearSeconds}s 后清空" : string.Empty;
+        string notice = $"已复制 {card.DisplayTitle}（{modeText}）{clearHint}";
 
         StatusMessage = notice;
         CopySucceeded?.Invoke(notice);

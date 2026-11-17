@@ -38,7 +38,7 @@
                         BorderBrush="{DynamicResource ControlElevationBorderBrush}"
                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
-                        <TextBlock FontWeight="SemiBold" Text="快捷导入（支持拖入二维码图片或按 Ctrl+V 粘贴截图）" />
+                        <TextBlock FontWeight="SemiBold" Text="快捷导入（支持拖图或 Ctrl+V 粘贴截图）" />
                         <Grid Margin="0,8,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -46,7 +46,7 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox x:Name="ImportInputTextBox"
                                         Grid.Column="0"
-                                        PlaceholderText="粘贴 otpauth://、otpauth-migration:// 或 Base32 密钥文本" />
+                                        PlaceholderText="粘贴 otpauth:// 链接或 Base32 密钥" />
                             <ui:Button Grid.Column="1"
                                        Margin="8,0,0,0"
                                        Content="解析"
@@ -54,14 +54,14 @@
                         </Grid>
                         <WrapPanel>
                             <ui:Button Margin="0,0,8,4"
-                                       Content="选择二维码图片"
+                                       Content="选择图片"
                                        Click="BrowseQrButton_Click" />
                             <ui:Button Margin="0,0,8,4"
-                                       Content="粘贴剪贴板截图 (Ctrl+V)"
+                                       Content="粘贴截图 (Ctrl+V)"
                                        Click="PasteQrButton_Click" />
                             <ui:Button Margin="0,0,0,4"
                                        Appearance="Primary"
-                                       Content="屏幕框选扫码"
+                                       Content="屏幕扫码"
                                        Click="ScreenSnipButton_Click" />
                         </WrapPanel>
                     </StackPanel>
@@ -162,10 +162,10 @@
                         <Grid Margin="0,0,0,8">
                             <TextBlock FontWeight="SemiBold"
                                        VerticalAlignment="Center"
-                                       Text="动态码前后缀（主界面默认隐藏）" />
+                                       Text="前后缀（主界面隐藏）" />
                             <CheckBox x:Name="RevealAffixCheckBox"
                                       HorizontalAlignment="Right"
-                                      Content="显示明文"
+                                      Content="显示"
                                       Checked="RevealAffixCheckBox_Changed"
                                       Unchecked="RevealAffixCheckBox_Changed" />
                         </Grid>
@@ -178,22 +178,22 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="前缀 (Prefix)" />
+                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="前缀" />
                                 <ui:PasswordBox x:Name="PrefixPasswordBox" PlaceholderText="可选，如 qwer" />
                                 <ui:TextBox x:Name="PrefixPlainTextBox" PlaceholderText="可选，如 qwer" Visibility="Collapsed" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="后缀 (Suffix)" />
+                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="后缀" />
                                 <ui:PasswordBox x:Name="SuffixPasswordBox" PlaceholderText="可选，如 tyu" />
                                 <ui:TextBox x:Name="SuffixPlainTextBox" PlaceholderText="可选，如 tyu" Visibility="Collapsed" />
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Margin="0,12,0,4" Opacity="0.8" Text="默认点击复制模式" />
+                        <TextBlock Margin="0,12,0,4" Opacity="0.8" Text="默认复制模式" />
                         <ComboBox x:Name="CopyModeComboBox">
-                            <ComboBoxItem Content="仅复制纯动态码（如 123456）" Tag="CodeOnly" />
-                            <ComboBoxItem Content="复制完整串 {前缀}{动态码}{后缀}" Tag="WithAffix" />
+                            <ComboBoxItem Content="纯动态码（123456）" Tag="CodeOnly" />
+                            <ComboBoxItem Content="完整串（前缀+动态码+后缀）" Tag="WithAffix" />
                         </ComboBox>
                     </StackPanel>
                 </Border>

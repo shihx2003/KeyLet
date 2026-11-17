@@ -18,31 +18,31 @@
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0"
-                     Title="KeyLet · 首次初始化"
+                     Title="KeyLet · 初始化"
                      ShowMaximize="False"
                      ShowMinimize="False" />
 
         <StackPanel Grid.Row="1" Margin="24,12,24,24">
             <TextBlock FontSize="20"
                        FontWeight="SemiBold"
-                       Text="创建本地加密密钥库" />
+                       Text="设置主密码" />
             <TextBlock Margin="0,6,0,16"
                        Opacity="0.75"
                        TextWrapping="Wrap"
-                       Text="所有密钥将通过 PBKDF2-SHA256 + AES-256-GCM 加密保存在同级 data/vault.csv 中，未打开应用时也可凭此密码外部解密。" />
+                       Text="密钥将加密保存在同级 data/ 目录，未打开软件也可凭此密码读取。" />
 
-            <TextBlock Margin="0,0,0,6" FontWeight="Medium" Text="设置主密码" />
+            <TextBlock Margin="0,0,0,6" FontWeight="Medium" Text="主密码" />
             <ui:PasswordBox x:Name="MasterPasswordBox"
-                            PlaceholderText="例如 admin1234（用于加密 CSV 密钥库）" />
+                            PlaceholderText="例如 admin1234" />
 
-            <TextBlock Margin="0,12,0,6" FontWeight="Medium" Text="确认主密码" />
+            <TextBlock Margin="0,12,0,6" FontWeight="Medium" Text="确认密码" />
             <ui:PasswordBox x:Name="ConfirmPasswordBox"
-                            PlaceholderText="再次输入主密码" />
+                            PlaceholderText="再次输入" />
 
             <CheckBox x:Name="AutoUnlockCheckBox"
                       Margin="0,14,0,0"
                       IsChecked="True"
-                      Content="在本机启用免密直接打开（Windows DPAPI 保护）" />
+                      Content="本机免密打开（DPAPI）" />
 
             <TextBlock x:Name="ErrorTextBlock"
                        Margin="0,10,0,0"
@@ -57,7 +57,7 @@
                            Content="取消"
                            Click="CancelButton_Click" />
                 <ui:Button Appearance="Primary"
-                           Content="创建并进入"
+                           Content="开始使用"
                            IsDefault="True"
                            Click="CreateButton_Click" />
             </StackPanel>

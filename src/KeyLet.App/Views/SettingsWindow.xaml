@@ -27,7 +27,7 @@
 
             <CheckBox x:Name="AutoUnlockCheckBox"
                       Margin="0,10,0,0"
-                      Content="在本机启用免密直接打开（Windows DPAPI 加密缓存）" />
+                      Content="本机免密打开（DPAPI）" />
 
             <Grid Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
@@ -68,7 +68,7 @@
                     BorderBrush="{DynamicResource ControlElevationBorderBrush}"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel>
-                    <TextBlock FontWeight="SemiBold" Text="修改主密码（重新加密 data/vault.csv）" />
+                    <TextBlock FontWeight="SemiBold" Text="修改主密码" />
                     <ui:PasswordBox x:Name="CurrentPasswordBox"
                                     Margin="0,8,0,0"
                                     PlaceholderText="当前主密码" />
@@ -97,7 +97,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock FontWeight="SemiBold" Text="便携数据目录 (data/)" />
+                        <TextBlock FontWeight="SemiBold" Text="数据目录" />
                         <TextBlock x:Name="DataPathTextBlock"
                                    Margin="0,4,8,0"
                                    FontSize="11.5"
