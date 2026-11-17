@@ -16,7 +16,9 @@ param(
     [ValidateSet("win-x64", "win-x86")]
     [string]$Runtime = "win-x64",
 
-    [bool]$SelfContained = $true
+    [bool]$SelfContained = $true,
+
+    [switch]$NoRestore
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,7 +67,8 @@ switch ($Task) {
         if (-not (Test-Path $SlnPath)) {
             throw "尚未找到 $SlnPath，请先初始化 src/ 下的项目。"
         }
-        & $DotNet build $SlnPath -c $Configuration
+        $extraArgs = if ($NoRestore) { @("--no-restore", "/p:UseSharedCompilation=false", "-m:1") } else { @() }
+        & $DotNet build $SlnPath -c $Configuration @extraArgs
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 
@@ -73,7 +76,8 @@ switch ($Task) {
         if (-not (Test-Path $SlnPath)) {
             throw "尚未找到 $SlnPath，请先初始化 src/ 下的项目。"
         }
-        & $DotNet test $SlnPath -c $Configuration
+        $extraArgs = if ($NoRestore) { @("--no-restore", "/p:UseSharedCompilation=false", "-m:1") } else { @() }
+        & $DotNet test $SlnPath -c $Configuration @extraArgs
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 
@@ -84,17 +88,21 @@ switch ($Task) {
         New-Item -ItemType Directory -Path $DistDir -Force | Out-Null
 
         $selfContainedFlag = if ($SelfContained) { "true" } else { "false" }
+        $extraArgs = if ($NoRestore) { @("--no-restore", "/p:UseSharedCompilation=false", "-m:1") } else { @() }
         & $DotNet publish $AppProjPath `
             -c $Configuration `
             -r $Runtime `
             --self-contained $selfContainedFlag `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
             -p:DebugType=none `
             -p:DebugSymbols=false `
+            @extraArgs `
             -o $DistDir
 
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Get-ChildItem -Path $DistDir -Filter "*.pdb" -ErrorAction SilentlyContinue | Remove-Item -Force
         Write-Host "[KeyLet] 单文件发布完成，输出目录: $DistDir" -ForegroundColor Green
     }
 }
