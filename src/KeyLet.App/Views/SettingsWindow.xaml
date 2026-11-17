@@ -1,0 +1,131 @@
+<ui:FluentWindow x:Class="KeyLet.App.Views.SettingsWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="KeyLet 设置"
+                 Width="480"
+                 SizeToContent="Height"
+                 ResizeMode="NoResize"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 WindowCornerPreference="Round">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0"
+                     Title="KeyLet · 设置"
+                     ShowMaximize="False"
+                     ShowMinimize="False" />
+
+        <StackPanel Grid.Row="1" Margin="24,10,24,24">
+            <TextBlock FontWeight="SemiBold" FontSize="15" Text="常规与安全" />
+
+            <CheckBox x:Name="AutoUnlockCheckBox"
+                      Margin="0,10,0,0"
+                      Content="在本机启用免密直接打开（Windows DPAPI 加密缓存）" />
+
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="剪贴板自动清空" />
+                    <ComboBox x:Name="ClipboardClearComboBox">
+                        <ComboBoxItem Content="不自动清空" Tag="0" />
+                        <ComboBoxItem Content="10 秒后清空" Tag="10" />
+                        <ComboBoxItem Content="20 秒后清空" Tag="20" />
+                        <ComboBoxItem Content="30 秒后清空" Tag="30" />
+                        <ComboBoxItem Content="60 秒后清空" Tag="60" />
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="外观主题" />
+                    <ComboBox x:Name="ThemeComboBox">
+                        <ComboBoxItem Content="跟随系统" Tag="System" />
+                        <ComboBoxItem Content="浅色模式" Tag="Light" />
+                        <ComboBoxItem Content="深色模式" Tag="Dark" />
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Margin="0,12,0,4" Opacity="0.8" Text="新增账号默认复制模式" />
+            <ComboBox x:Name="GlobalCopyModeComboBox">
+                <ComboBoxItem Content="仅复制纯动态码" Tag="CodeOnly" />
+                <ComboBoxItem Content="复制带前后缀完整码" Tag="WithAffix" />
+            </ComboBox>
+
+            <Border Margin="0,16,0,0"
+                    Padding="12"
+                    CornerRadius="8"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="修改主密码（重新加密 data/vault.csv）" />
+                    <ui:PasswordBox x:Name="CurrentPasswordBox"
+                                    Margin="0,8,0,0"
+                                    PlaceholderText="当前主密码" />
+                    <ui:PasswordBox x:Name="NewPasswordBox"
+                                    Margin="0,8,0,0"
+                                    PlaceholderText="新主密码" />
+                    <ui:PasswordBox x:Name="ConfirmNewPasswordBox"
+                                    Margin="0,8,0,0"
+                                    PlaceholderText="确认新主密码" />
+                    <ui:Button Margin="0,10,0,0"
+                               HorizontalAlignment="Right"
+                               Content="更新主密码"
+                               Click="ChangePasswordButton_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border Margin="0,14,0,0"
+                    Padding="12"
+                    CornerRadius="8"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock FontWeight="SemiBold" Text="便携数据目录 (data/)" />
+                        <TextBlock x:Name="DataPathTextBlock"
+                                   Margin="0,4,8,0"
+                                   FontSize="11.5"
+                                   Opacity="0.75"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ui:Button Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Content="打开目录"
+                               Click="OpenDataFolderButton_Click" />
+                </Grid>
+            </Border>
+
+            <TextBlock x:Name="FeedbackTextBlock"
+                       Margin="0,10,0,0"
+                       TextWrapping="Wrap"
+                       Visibility="Collapsed" />
+
+            <StackPanel Margin="0,18,0,0"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <ui:Button Margin="0,0,10,0"
+                           Content="取消"
+                           Click="CancelButton_Click" />
+                <ui:Button Appearance="Primary"
+                           Content="保存设置"
+                           IsDefault="True"
+                           Click="SaveButton_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

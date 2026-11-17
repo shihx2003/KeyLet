@@ -1,0 +1,220 @@
+<ui:FluentWindow x:Class="KeyLet.App.Views.AccountEditorWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="添加 / 编辑 2FA 密钥"
+                 Width="540"
+                 SizeToContent="Height"
+                 ResizeMode="NoResize"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 WindowCornerPreference="Round"
+                 AllowDrop="True"
+                 Drop="Window_Drop"
+                 DragOver="Window_DragOver"
+                 PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="EditorTitleBar"
+                     Grid.Row="0"
+                     Title="添加 2FA 密钥"
+                     ShowMaximize="False"
+                     ShowMinimize="False" />
+
+        <ScrollViewer Grid.Row="1" MaxHeight="660" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="22,10,22,22">
+                <!-- 快捷导入区（新增模式显示） -->
+                <Border x:Name="ImportSectionBorder"
+                        Padding="14"
+                        Margin="0,0,0,14"
+                        CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" Text="快捷导入（支持拖入二维码图片或按 Ctrl+V 粘贴截图）" />
+                        <Grid Margin="0,8,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="ImportInputTextBox"
+                                        Grid.Column="0"
+                                        PlaceholderText="粘贴 otpauth://、otpauth-migration:// 或 Base32 密钥文本" />
+                            <ui:Button Grid.Column="1"
+                                       Margin="8,0,0,0"
+                                       Content="解析"
+                                       Click="ParseInputButton_Click" />
+                        </Grid>
+                        <WrapPanel>
+                            <ui:Button Margin="0,0,8,4"
+                                       Content="选择二维码图片"
+                                       Click="BrowseQrButton_Click" />
+                            <ui:Button Margin="0,0,8,4"
+                                       Content="粘贴剪贴板截图 (Ctrl+V)"
+                                       Click="PasteQrButton_Click" />
+                            <ui:Button Margin="0,0,0,4"
+                                       Appearance="Primary"
+                                       Content="屏幕框选扫码"
+                                       Click="ScreenSnipButton_Click" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 批量迁移预览区（解析出多条时显示） -->
+                <Border x:Name="BatchImportBorder"
+                        Padding="14"
+                        Margin="0,0,0,14"
+                        CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock x:Name="BatchSummaryTextBlock"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8" />
+                        <ListBox x:Name="BatchAccountsListBox"
+                                 MaxHeight="180"
+                                 BorderThickness="0"
+                                 Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsSelected}" Margin="0,2">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock FontWeight="Medium" Text="{Binding Title}" />
+                                            <TextBlock Margin="8,0,0,0" Opacity="0.7" Text="{Binding Subtitle}" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- 单条编辑表单 -->
+                <StackPanel x:Name="SingleAccountPanel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Margin="0,0,0,4" FontWeight="Medium" Text="发行方 / 平台" />
+                            <ui:TextBox x:Name="IssuerTextBox" PlaceholderText="例如 GitHub、CorpVPN" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Margin="0,0,0,4" FontWeight="Medium" Text="账号名称" />
+                            <ui:TextBox x:Name="AccountNameTextBox" PlaceholderText="例如 alice@example.com" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Margin="0,12,0,4" FontWeight="Medium" Text="Base32 密钥" />
+                    <ui:TextBox x:Name="SecretTextBox"
+                                FontFamily="Consolas"
+                                PlaceholderText="例如 JBSWY3DPEHPK3PXP" />
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Margin="0,0,0,4" FontWeight="Medium" Text="算法" />
+                            <ComboBox x:Name="AlgorithmComboBox">
+                                <ComboBoxItem Content="SHA1" Tag="Sha1" />
+                                <ComboBoxItem Content="SHA256" Tag="Sha256" />
+                                <ComboBoxItem Content="SHA512" Tag="Sha512" />
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Margin="0,0,0,4" FontWeight="Medium" Text="位数" />
+                            <ComboBox x:Name="DigitsComboBox">
+                                <ComboBoxItem Content="6 位" Tag="6" />
+                                <ComboBoxItem Content="8 位" Tag="8" />
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Margin="0,0,0,4" FontWeight="Medium" Text="周期（秒）" />
+                            <ui:TextBox x:Name="PeriodTextBox" Text="30" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- 隐藏前后缀设置（单条和批量共用） -->
+                <Border Margin="0,14,0,0"
+                        Padding="14"
+                        CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <TextBlock FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Text="动态码前后缀（主界面默认隐藏）" />
+                            <CheckBox x:Name="RevealAffixCheckBox"
+                                      HorizontalAlignment="Right"
+                                      Content="显示明文"
+                                      Checked="RevealAffixCheckBox_Changed"
+                                      Unchecked="RevealAffixCheckBox_Changed" />
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="前缀 (Prefix)" />
+                                <ui:PasswordBox x:Name="PrefixPasswordBox" PlaceholderText="可选，如 qwer" />
+                                <ui:TextBox x:Name="PrefixPlainTextBox" PlaceholderText="可选，如 qwer" Visibility="Collapsed" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="后缀 (Suffix)" />
+                                <ui:PasswordBox x:Name="SuffixPasswordBox" PlaceholderText="可选，如 tyu" />
+                                <ui:TextBox x:Name="SuffixPlainTextBox" PlaceholderText="可选，如 tyu" Visibility="Collapsed" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Margin="0,12,0,4" Opacity="0.8" Text="默认点击复制模式" />
+                        <ComboBox x:Name="CopyModeComboBox">
+                            <ComboBoxItem Content="仅复制纯动态码（如 123456）" Tag="CodeOnly" />
+                            <ComboBoxItem Content="复制完整串 {前缀}{动态码}{后缀}" Tag="WithAffix" />
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock x:Name="ErrorTextBlock"
+                           Margin="0,10,0,0"
+                           Foreground="#FFEF4444"
+                           TextWrapping="Wrap"
+                           Visibility="Collapsed" />
+
+                <StackPanel Margin="0,18,0,0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <ui:Button Margin="0,0,10,0"
+                               Content="取消"
+                               Click="CancelButton_Click" />
+                    <ui:Button Appearance="Primary"
+                               Content="保存"
+                               IsDefault="True"
+                               Click="SaveButton_Click" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</ui:FluentWindow>
