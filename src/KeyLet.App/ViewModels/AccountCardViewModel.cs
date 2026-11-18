@@ -12,6 +12,8 @@ public sealed class AccountCardViewModel : ObservableObject
     private string _displayCode = "------";
     private int _remainingSeconds = OtpAccount.DefaultPeriodSeconds;
     private int _periodSeconds = OtpAccount.DefaultPeriodSeconds;
+    private bool _isDropAbove;
+    private bool _isDropBelow;
 
     public AccountCardViewModel(OtpAccount account)
     {
@@ -92,6 +94,18 @@ public sealed class AccountCardViewModel : ObservableObject
     public bool IsExpiringSoon => RemainingSeconds <= 5;
 
     public string CountdownLabel => $"{RemainingSeconds}s";
+
+    public bool IsDropAbove
+    {
+        get => _isDropAbove;
+        set => SetProperty(ref _isDropAbove, value);
+    }
+
+    public bool IsDropBelow
+    {
+        get => _isDropBelow;
+        set => SetProperty(ref _isDropBelow, value);
+    }
 
     /// <summary>
     /// 用最新的账号实体替换并立即刷新展示与验证码。

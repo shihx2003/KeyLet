@@ -184,6 +184,46 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
+    /// 拖拽调整账号顺序并持久化到 data/vault.csv。
+    /// </summary>
+    public void MoveAccount(AccountCardViewModel sourceCard, AccountCardViewModel targetCard, bool insertAfter)
+    {
+        EnsureUnlocked();
+        if (sourceCard.Id == targetCard.Id)
+        {
+            return;
+        }
+
+        int sourceIndex = _allAccounts.FindIndex(a => a.Id == sourceCard.Id);
+        int targetIndex = _allAccounts.FindIndex(a => a.Id == targetCard.Id);
+        if (sourceIndex < 0 || targetIndex < 0)
+        {
+            return;
+        }
+
+        OtpAccount item = _allAccounts[sourceIndex];
+        _allAccounts.RemoveAt(sourceIndex);
+
+        if (sourceIndex < targetIndex)
+        {
+            targetIndex--;
+        }
+
+        int insertIndex = insertAfter ? targetIndex + 1 : targetIndex;
+        insertIndex = Math.Clamp(insertIndex, 0, _allAccounts.Count);
+        if (insertIndex == sourceIndex)
+        {
+            _allAccounts.Insert(sourceIndex, item);
+            return;
+        }
+
+        _allAccounts.Insert(insertIndex, item);
+        PersistAccounts();
+        ApplyFilter();
+        StatusMessage = $"已调整 {sourceCard.DisplayTitle} 顺序";
+    }
+
+    /// <summary>
     /// 更新并持久化应用设置，同步本机 DPAPI 免密缓存状态与主题。
     /// </summary>
     public void UpdateSettings(AppSettings updated)

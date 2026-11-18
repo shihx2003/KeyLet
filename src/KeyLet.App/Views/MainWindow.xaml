@@ -71,19 +71,33 @@
 
         <!-- 账号卡片列表 -->
         <Grid Grid.Row="2" Margin="18,0,18,0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="AccountsScrollViewer"
+                          VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding FilteredAccounts}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="0,0,0,10"
-                                    Padding="14,12"
-                                    CornerRadius="10"
-                                    BorderThickness="1"
-                                    Cursor="Hand"
-                                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                    ToolTip="{Binding DefaultActionTooltip}"
-                                    MouseLeftButtonUp="Card_MouseLeftButtonUp">
+                            <StackPanel>
+                                <Border Height="3"
+                                        CornerRadius="1.5"
+                                        Margin="4,0,4,4"
+                                        Background="#FF0EA5E9"
+                                        Visibility="{Binding IsDropAbove, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <Border Margin="0,0,0,10"
+                                        Padding="14,12"
+                                        CornerRadius="10"
+                                        BorderThickness="1"
+                                        Cursor="Hand"
+                                        AllowDrop="True"
+                                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        ToolTip="{Binding DefaultActionTooltip}"
+                                        PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="Card_PreviewMouseMove"
+                                        DragOver="Card_DragOver"
+                                        DragLeave="Card_DragLeave"
+                                        Drop="Card_Drop"
+                                        MouseLeftButtonUp="Card_MouseLeftButtonUp">
                                 <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="复制纯动态码"
@@ -228,7 +242,13 @@
                                         </StackPanel>
                                     </Grid>
                                 </Grid>
-                            </Border>
+                                </Border>
+                                <Border Height="3"
+                                        CornerRadius="1.5"
+                                        Margin="4,-6,4,6"
+                                        Background="#FF0EA5E9"
+                                        Visibility="{Binding IsDropBelow, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

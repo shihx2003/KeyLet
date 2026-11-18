@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using KeyLet.App.Services;
 using KeyLet.App.ViewModels;
@@ -10,13 +12,20 @@ using Wpf.Ui.Controls;
 namespace KeyLet.App.Views;
 
 /// <summary>
-/// KeyLet 主界面窗口：实时展示 TOTP 动态码、处理多模式复制与快捷键导入交互。
+/// KeyLet 主界面窗口：实时展示 TOTP 动态码、处理多模式复制、拖拽排序与快捷键导入交互。
 /// </summary>
 public partial class MainWindow : FluentWindow
 {
+    private const string AccountDragFormat = "KeyLetAccountCard";
+
     private readonly MainViewModel _viewModel;
     private readonly QrCodeScannerService _qrScanner;
     private readonly DispatcherTimer _timer;
+
+    private Point? _dragStartPoint;
+    private AccountCardViewModel? _draggedCard;
+    private AccountCardViewModel? _hoveredDropCard;
+    private bool _isDraggingCard;
 
     public MainWindow(MainViewModel viewModel, QrCodeScannerService qrScanner)
     {
@@ -93,13 +102,193 @@ public partial class MainWindow : FluentWindow
         settingsWindow.ShowDialog();
     }
 
+    private void Card_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject source && FindAncestor<ButtonBase>(source) is not null)
+        {
+            _dragStartPoint = null;
+            _draggedCard = null;
+            return;
+        }
+
+        if (sender is FrameworkElement element && element.DataContext is AccountCardViewModel card)
+        {
+            _dragStartPoint = e.GetPosition(null);
+            _draggedCard = card;
+            _isDraggingCard = false;
+        }
+    }
+
+    private void Card_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed ||
+            _draggedCard is null ||
+            !_dragStartPoint.HasValue ||
+            _isDraggingCard ||
+            sender is not Border border)
+        {
+            return;
+        }
+
+        Point current = e.GetPosition(null);
+        double dx = Math.Abs(current.X - _dragStartPoint.Value.X);
+        double dy = Math.Abs(current.Y - _dragStartPoint.Value.Y);
+        double thresholdX = Math.Max(6, SystemParameters.MinimumHorizontalDragDistance);
+        double thresholdY = Math.Max(6, SystemParameters.MinimumVerticalDragDistance);
+
+        if (dx < thresholdX && dy < thresholdY)
+        {
+            return;
+        }
+
+        _isDraggingCard = true;
+        AccountCardViewModel dragged = _draggedCard;
+        double originalOpacity = border.Opacity;
+        border.Opacity = 0.55;
+
+        try
+        {
+            DragDrop.DoDragDrop(border, new DataObject(AccountDragFormat, dragged), DragDropEffects.Move);
+        }
+        finally
+        {
+            border.Opacity = originalOpacity;
+            ClearDropIndicator();
+            _dragStartPoint = null;
+            _draggedCard = null;
+            _isDraggingCard = false;
+        }
+    }
+
+    private void Card_DragOver(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(AccountDragFormat))
+        {
+            return;
+        }
+
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+
+        AutoScrollDuringDrag(e.GetPosition(AccountsScrollViewer));
+
+        if (sender is FrameworkElement border &&
+            border.DataContext is AccountCardViewModel targetCard &&
+            e.Data.GetData(AccountDragFormat) is AccountCardViewModel sourceCard)
+        {
+            if (sourceCard.Id == targetCard.Id)
+            {
+                ClearDropIndicator();
+                return;
+            }
+
+            bool insertAfter = e.GetPosition(border).Y > border.ActualHeight / 2.0;
+            SetDropIndicator(targetCard, insertAfter);
+        }
+    }
+
+    private void Card_DragLeave(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(AccountDragFormat))
+        {
+            return;
+        }
+
+        if (sender is FrameworkElement border &&
+            border.DataContext is AccountCardViewModel targetCard &&
+            _hoveredDropCard?.Id == targetCard.Id)
+        {
+            ClearDropIndicator();
+        }
+    }
+
+    private void Card_Drop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(AccountDragFormat))
+        {
+            return;
+        }
+
+        e.Handled = true;
+        ClearDropIndicator();
+
+        if (sender is FrameworkElement border &&
+            border.DataContext is AccountCardViewModel targetCard &&
+            e.Data.GetData(AccountDragFormat) is AccountCardViewModel sourceCard &&
+            sourceCard.Id != targetCard.Id)
+        {
+            bool insertAfter = e.GetPosition(border).Y > border.ActualHeight / 2.0;
+            _viewModel.MoveAccount(sourceCard, targetCard, insertAfter);
+        }
+    }
+
     private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        if (_isDraggingCard)
+        {
+            return;
+        }
+
+        _dragStartPoint = null;
+        _draggedCard = null;
+
         if (sender is FrameworkElement element && element.DataContext is AccountCardViewModel card)
         {
             bool alternate = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
             _viewModel.CopyAccount(card, alternate);
         }
+    }
+
+    private void SetDropIndicator(AccountCardViewModel targetCard, bool insertAfter)
+    {
+        if (_hoveredDropCard is not null && _hoveredDropCard.Id != targetCard.Id)
+        {
+            _hoveredDropCard.IsDropAbove = false;
+            _hoveredDropCard.IsDropBelow = false;
+        }
+
+        _hoveredDropCard = targetCard;
+        targetCard.IsDropAbove = !insertAfter;
+        targetCard.IsDropBelow = insertAfter;
+    }
+
+    private void ClearDropIndicator()
+    {
+        if (_hoveredDropCard is not null)
+        {
+            _hoveredDropCard.IsDropAbove = false;
+            _hoveredDropCard.IsDropBelow = false;
+            _hoveredDropCard = null;
+        }
+    }
+
+    private void AutoScrollDuringDrag(Point positionInViewer)
+    {
+        const double edgeThreshold = 36;
+        const double scrollStep = 14;
+
+        if (positionInViewer.Y < edgeThreshold)
+        {
+            AccountsScrollViewer.ScrollToVerticalOffset(Math.Max(0, AccountsScrollViewer.VerticalOffset - scrollStep));
+        }
+        else if (positionInViewer.Y > AccountsScrollViewer.ActualHeight - edgeThreshold)
+        {
+            AccountsScrollViewer.ScrollToVerticalOffset(
+                Math.Min(AccountsScrollViewer.ScrollableHeight, AccountsScrollViewer.VerticalOffset + scrollStep));
+        }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current is not null)
+        {
+            if (current is T match)
+            {
+                return match;
+            }
+            current = VisualTreeHelper.GetParent(current);
+        }
+        return null;
     }
 
     private void CopyCodeOnlyButton_Click(object sender, RoutedEventArgs e)
