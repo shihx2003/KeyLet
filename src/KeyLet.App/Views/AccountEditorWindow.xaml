@@ -162,7 +162,7 @@
                         <Grid Margin="0,0,0,8">
                             <TextBlock FontWeight="SemiBold"
                                        VerticalAlignment="Center"
-                                       Text="前后缀（主界面隐藏）" />
+                                       Text="前后缀" />
                             <CheckBox x:Name="RevealAffixCheckBox"
                                       HorizontalAlignment="Right"
                                       Content="显示"
@@ -179,21 +179,21 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="前缀" />
-                                <ui:PasswordBox x:Name="PrefixPasswordBox" PlaceholderText="可选，如 qwer" />
-                                <ui:TextBox x:Name="PrefixPlainTextBox" PlaceholderText="可选，如 qwer" Visibility="Collapsed" />
+                                <ui:PasswordBox x:Name="PrefixPasswordBox" PlaceholderText="可选" />
+                                <ui:TextBox x:Name="PrefixPlainTextBox" PlaceholderText="可选" Visibility="Collapsed" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Margin="0,0,0,4" Opacity="0.8" Text="后缀" />
-                                <ui:PasswordBox x:Name="SuffixPasswordBox" PlaceholderText="可选，如 tyu" />
-                                <ui:TextBox x:Name="SuffixPlainTextBox" PlaceholderText="可选，如 tyu" Visibility="Collapsed" />
+                                <ui:PasswordBox x:Name="SuffixPasswordBox" PlaceholderText="可选" />
+                                <ui:TextBox x:Name="SuffixPlainTextBox" PlaceholderText="可选" Visibility="Collapsed" />
                             </StackPanel>
                         </Grid>
 
                         <TextBlock Margin="0,12,0,4" Opacity="0.8" Text="默认复制模式" />
                         <ComboBox x:Name="CopyModeComboBox">
-                            <ComboBoxItem Content="纯动态码（123456）" Tag="CodeOnly" />
-                            <ComboBoxItem Content="完整串（前缀+动态码+后缀）" Tag="WithAffix" />
+                            <ComboBoxItem Content="纯动态码" Tag="CodeOnly" />
+                            <ComboBoxItem Content="完整串" Tag="WithAffix" />
                         </ComboBox>
                     </StackPanel>
                 </Border>

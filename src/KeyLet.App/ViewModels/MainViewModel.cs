@@ -133,9 +133,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             StatusMessage = "剪贴板已自动安全清空";
         });
 
-        string modeText = effectiveMode == CopyFormatMode.WithAffix ? "完整码" : "纯码";
         string clearHint = clearSeconds > 0 ? $" · {clearSeconds}s 后清空" : string.Empty;
-        string notice = $"已复制 {card.DisplayTitle}（{modeText}）{clearHint}";
+        string notice = $"已复制 {card.DisplayTitle}{clearHint}";
 
         StatusMessage = notice;
         CopySucceeded?.Invoke(notice);

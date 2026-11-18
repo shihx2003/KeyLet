@@ -33,7 +33,7 @@
 
             <TextBlock Margin="0,0,0,6" FontWeight="Medium" Text="主密码" />
             <ui:PasswordBox x:Name="MasterPasswordBox"
-                            PlaceholderText="例如 admin1234" />
+                            PlaceholderText="请输入密码" />
 
             <TextBlock Margin="0,12,0,6" FontWeight="Medium" Text="确认密码" />
             <ui:PasswordBox x:Name="ConfirmPasswordBox"
